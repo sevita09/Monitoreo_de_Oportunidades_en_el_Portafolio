@@ -69,11 +69,18 @@ def valores_de_hoy_calculados(data_dolar, data_bandas):
     Output('valor_del_dolar', 'children'),
     Output('variacion_del_dolar_d', 'children'),
     Output('variacion_del_dolar_m', 'children'),
-    Output('variacion_del_dolar_y2d', 'children'),
+    Output('variacion_del_dolar_ytd', 'children'),
     Output('banda_superior', 'children'),
-    Output('banda_inferior', 'children')],
-    [Input('pagina_datos_del_pais', 'children')])
-def grafico_del_dolar(child):
+    Output('banda_inferior', 'children'),
+    Output('variacion_dolar_banda_superior', 'children'),
+    Output('variacion_dolar_banda_inferior', 'children'),
+    Output('media_movil_21', 'children'),
+    Output('media_movil_100', 'children'),
+    Output('variacion_dolar_mov21', 'children'),
+    Output('variacion_dolar_mov100', 'children')],
+    [Input('pagina_datos_del_pais', 'children'),
+     Input('mostrar_deciles_dolar_oficial', 'on')])
+def grafico_del_dolar(child, mostrar_deciles):
   if child != html.Div():
     # Obtener datos del dolar
     dolar = "USDARS=X"
@@ -113,8 +120,10 @@ def grafico_del_dolar(child):
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_inferior, mode='lines', name='banda inferior', line=dict(color='green')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.mitad_del_cono, mode='markers', name='mitad del cono', opacity=0.4, line=dict(color='blue')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_superior, mode='lines', name='banda superior', line=dict(color='red')))
-    for i in range(0,9):
-      figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='bandas intermedias', line=dict(color='yellow')))
+    if mostrar_deciles:
+      # Agregar las bandas al gráfico
+      for i in range(0,9):
+        figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color='yellow')))
     figCandles.update_layout(title='Dolar Oficial', xaxis_rangeslider_visible=False, template="plotly_dark")
 
     # valores
@@ -122,7 +131,13 @@ def grafico_del_dolar(child):
     variacion_del_dolar_d = ((valores_de_hoy.valor_del_dolar/data_dolar.Close.iloc[-2])-1)*100
     dia_de_hoy = -(dia_de_hoy+1)
     variacion_del_dolar_m = ((valores_de_hoy.valor_del_dolar/data_dolar.Close.iloc[dia_de_hoy])-1)*100
-    variacion_del_dolar_y2d = ((valores_de_hoy.valor_del_dolar/valor_dolar_primer_dia_del_ano)-1)*100
+    variacion_del_dolar_ytd = ((valores_de_hoy.valor_del_dolar/valor_dolar_primer_dia_del_ano)-1)*100
+    variacion_dolar_banda_superior = ((valores_de_hoy.valor_banda_superior/valores_de_hoy.valor_del_dolar)-1)*100
+    variacion_dolar_banda_inferior = ((valores_de_hoy.valor_banda_inferior/valores_de_hoy.valor_del_dolar)-1)*100
+    media_movil_21 = data_dolar.Close.rolling(window=21).mean().iloc[-1]
+    media_movil_100 = data_dolar.Close.rolling(window=100).mean().iloc[-1]
+    variacion_dolar_mov21 = ((media_movil_21/valores_de_hoy.valor_del_dolar)-1)*100
+    variacion_dolar_mov100 = ((media_movil_100/valores_de_hoy.valor_del_dolar)-1)*100
 
     # Lista de 10 códigos de colores rgb en exa del rojo al verde pasando por
     # el amarillo como si fuera un semaforo
@@ -170,6 +185,6 @@ def grafico_del_dolar(child):
 
 
 
-    return figCandles, figCaro, round(valores_de_hoy.valor_del_dolar, 2), round(variacion_del_dolar_d, 2), round(variacion_del_dolar_m, 2), round(variacion_del_dolar_y2d, 2), valores_de_hoy.valor_banda_superior.iloc[0], valores_de_hoy.valor_banda_inferior.iloc[0]
+    return figCandles, figCaro, round(valores_de_hoy.valor_del_dolar, 2), round(variacion_del_dolar_d, 2), round(variacion_del_dolar_m, 2), round(variacion_del_dolar_ytd, 2), valores_de_hoy.valor_banda_superior.iloc[0], valores_de_hoy.valor_banda_inferior.iloc[0], round(variacion_dolar_banda_superior, 2), round(variacion_dolar_banda_inferior, 2), round(media_movil_21,2), round(media_movil_100,2), round(variacion_dolar_mov21,2), round(variacion_dolar_mov100,2)
   else:
-    return None, None, None, None, None, None, None, None
+    return None, None, None, None, None, None, None, None, None, None, None, None, None, None
