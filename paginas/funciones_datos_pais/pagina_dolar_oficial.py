@@ -13,6 +13,7 @@ def pagina_datos_del_dolar_oficial(tab):
                 figure=None),
       daq.BooleanSwitch(
         id='mostrar_deciles_dolar_oficial',
+        
         on=False,
         label="Mostrar deciles",
         labelPosition="left"

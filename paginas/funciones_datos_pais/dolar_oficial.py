@@ -106,6 +106,10 @@ def grafico_del_dolar(child, mostrar_deciles):
     # Bandas
     data_bandas = calculo_de_todas_las_bandas(dia_inicial, valor_dia_inicial_inferior, valor_dia_inicial_superior, dia_de_pendiente, valor_dia_de_pendiente_inferior, valor_dia_de_pendiente_superior, distancia)
 
+    # Serie de ema de 200 y 100 sobre el dolar
+    dolar_EMA21 = data_dolar['Close'].ewm(span=21, adjust=False).mean()
+    dolar_EMA100 = data_dolar['Close'].ewm(span=100, adjust=False).mean()
+
     # Gráfico
     figCandles = go.Figure(data=[go.Candlestick(x=data_dolar.index,
                                         open=data_dolar.Open,
@@ -120,6 +124,8 @@ def grafico_del_dolar(child, mostrar_deciles):
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_inferior, mode='lines', name='banda inferior', line=dict(color='green')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.mitad_del_cono, mode='markers', name='mitad del cono', opacity=0.4, line=dict(color='blue')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_superior, mode='lines', name='banda superior', line=dict(color='red')))
+    figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA21, mode='lines', name='EMA 21', line=dict(color='orange', width=1)))
+    figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA100, mode='lines', name='EMA 100', line=dict(color='purple', width=1)))
     if mostrar_deciles:
       # Agregar las bandas al gráfico
       for i in range(0,9):

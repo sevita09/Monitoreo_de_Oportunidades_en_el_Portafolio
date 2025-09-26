@@ -6,7 +6,7 @@ from paginas.pagina_renta_variable import pagina_renta_variable
 app = Dash(__name__)
 
 # Quitar para probar en local y agregar para desplegar en Prod
-#server = app.server
+server = app.server
 
 app.layout = html.Div([
     dcc.Tabs(
