@@ -1,10 +1,6 @@
-from dash import html, dcc, Input, Output, callback
+from dash import html, dcc
 
-@callback(
-    Output('pagina_renta_variable', 'children'),
-    Input('tabs', 'value'))
-def pagina_renta_variable(tab):
-  if tab == 'tab_renta_variable':
+def pagina_renta_variable():
     return html.Div([
       html.H3('Renta Variable'),
       dcc.Graph(
@@ -16,6 +12,4 @@ def pagina_renta_variable(tab):
               }]
           }
       )
-    ]);
-  else:
-    return html.Div();
+    ])
