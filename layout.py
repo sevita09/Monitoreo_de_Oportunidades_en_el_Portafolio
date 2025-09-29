@@ -1,8 +1,9 @@
 import dash_bootstrap_components as dbc
 from dash import Input, Output, html, callback
-from paginas.datos_pais import pagina_datos_del_pais
+from paginas.pagina_datos_pais import pagina_datos_del_pais
 from paginas.pagina_renta_fija import pagina_renta_fija
 from paginas.pagina_renta_variable import pagina_renta_variable
+from paginas.funciones_datos_pais.dolar_oficial import grafico_del_dolar
 
 def create_sidebar():
     sidebar = html.Div([
