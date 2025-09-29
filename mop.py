@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, page_container
 import dash_bootstrap_components as dbc
 from layout import create_navbar, create_sidebar, create_content
 import dash_bootstrap_components as dbc
