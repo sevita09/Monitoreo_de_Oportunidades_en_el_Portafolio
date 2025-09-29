@@ -78,10 +78,12 @@ def valores_de_hoy_calculados(data_dolar, data_bandas):
     Output('media_movil_100', 'children'),
     Output('variacion_dolar_mov21', 'children'),
     Output('variacion_dolar_mov100', 'children')],
-    [Input('pagina_datos_del_dolar_oficial', 'children'),
+    [Input("url", "pathname"),
      Input('mostrar_deciles_dolar_oficial', 'on')])
-def grafico_del_dolar(child, mostrar_deciles):
-  if child != html.Div():
+def grafico_del_dolar(path, mostrar_deciles):
+  print("Actualizar grafico del dolar")
+  if path == "/datos_macro":
+    print("Actualizar grafico del dolar - dentro del if")
     # Obtener datos del dolar
     dolar = "USDARS=X"
 

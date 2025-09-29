@@ -1,11 +1,7 @@
 from dash import html, dcc, Input, Output, callback
 import dash_daq as daq
 
-@callback(
-    Output('pagina_datos_del_dolar_oficial', 'children'),
-    Input("url", "pathname"))
-def pagina_datos_del_dolar_oficial(pathname):
-  if pathname == '/datos_macro':
+def pagina_datos_del_dolar_oficial():
     return html.Div([
       html.H3('Datos macros del país'),
       dcc.Graph(id="grafico_del_dolar",
@@ -82,6 +78,4 @@ def pagina_datos_del_dolar_oficial(pathname):
         ],style={'justify-content': 'center'})],
         style={'display': 'flex', 'justify-content': 'center'}
       )
-    ]);
-  else:
-    return html.Div();
+    ])
