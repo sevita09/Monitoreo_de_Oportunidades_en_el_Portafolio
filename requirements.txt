@@ -1,3 +1,5 @@
 dash
+dash-daq
 dash_bootstrap_components
+yfinance
 gunicorn

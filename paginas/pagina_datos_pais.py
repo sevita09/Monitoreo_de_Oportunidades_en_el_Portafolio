@@ -1,15 +1,4 @@
-from dash import html, dcc
+from dash import html
 
 def pagina_datos_del_pais():
-  return html.Div([
-    html.H3('Datos del país'),
-    dcc.Graph(
-        figure={
-            'data': [{
-                'x': [1, 2, 3],
-                'y': [1, 2, 3],
-                'type': 'bar'
-            }]
-        }
-    )
-    ])
+  return html.Div(id="pagina_datos_del_dolar_oficial")
