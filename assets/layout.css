@@ -1,0 +1,107 @@
+/* coloca el nabvar en su lugar */
+.navbar {
+  top: 0rem;
+  margin-left: -1.25rem;
+  bottom: 0;
+  height: 1.5rem;
+  padding: 1.25rem 0.01rem;
+}
+
+/* estilo del nombre de la app en el navbar */
+.nav-brand-name {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.939);
+  margin-left: 1rem;
+}
+
+/* estilo de los iconos del modo oscuro y claro */
+.modo_oscuro_claro_sol{
+  width: 1rem;
+  left: 0rem;
+  margin-left: -0.25rem;
+}
+
+.modo_oscuro_claro_sol:hover{
+  width: 1rem;
+  left: 0rem;
+  margin-left: -0.25rem;
+}
+
+.modo_oscuro_claro_luna{
+  width: 1rem;
+  margin-left: -0.1rem;
+}
+
+.modo_oscuro_claro_luna:hover{
+  width: 1rem;
+  margin-left: -0.1rem;
+}
+
+/* Asegura que el botón del dropdown no tenga relleno extra */
+.navbar-toggler {
+  padding: 0;
+  border: none;
+}
+
+/* Controla el ancho del menú desplegable */
+.dropdown-menu {
+  min-width: 0; /* Anula el mínimo por defecto */
+  padding: -0.5rem;
+  margin-left: 1rem;
+  width: 2.5rem;
+  background-color: #315391;
+}
+
+/* coloca el sidebar en su lugar y le pone su estilo */
+.sidebar {
+  position: fixed;
+  top: 2.5rem;
+  left: 0;
+  bottom: 0;
+  width: 3rem;
+  padding: 1rem 1rem;
+  background-color: #245496;
+  /*background-color: #173b6f;*/
+  z-index: 1050;
+  transition: width 0.1s ease-in-out;
+}
+
+/* cuando el usuario pasa el mouse sobre el sidebar, expandirlo */
+.sidebar:hover {
+  width: 11rem;
+}
+
+/* esconde el contenido del navlink cuando la barra de navegación se colapse */
+.sidebar .nav-link {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-left: -0.5rem;
+}
+
+/* estilo de los iconos del sidebar */
+.sidebar .nav-link i {
+  width: 1rem;
+  left: 0rem;
+  margin-left: -0.5rem;
+}
+
+/* esconde el nombre de las categorias del sidebar */
+.sidebar .nav-link span {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out;
+}
+
+/* muestra los nombres de las categorias del sidebar */
+.sidebar:hover .nav-link span {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* posicion del contenido de la página */
+.content {
+  margin-left: 2rem;
+  margin-right: 2rem;
+  padding: 2rem 1rem;
+}
