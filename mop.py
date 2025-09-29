@@ -10,7 +10,7 @@ app.title = "MOP - Monitoreo de Oportunidades en el Portafolio"
 app.config.suppress_callback_exceptions = True
 
 # Quitar para probar en local y agregar para desplegar en Prod
-#server = app.server
+server = app.server
 
 navbar = create_navbar()
 sidebar = create_sidebar()
@@ -26,4 +26,4 @@ app.layout = html.Div(
 )
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
