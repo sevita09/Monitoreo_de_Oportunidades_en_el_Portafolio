@@ -78,7 +78,7 @@ def valores_de_hoy_calculados(data_dolar, data_bandas):
     Output('media_movil_100', 'children'),
     Output('variacion_dolar_mov21', 'children'),
     Output('variacion_dolar_mov100', 'children')],
-    [Input('pagina_datos_del_pais', 'children'),
+    [Input('pagina_datos_del_dolar_oficial', 'children'),
      Input('mostrar_deciles_dolar_oficial', 'on')])
 def grafico_del_dolar(child, mostrar_deciles):
   if child != html.Div():
@@ -188,9 +188,6 @@ def grafico_del_dolar(child, mostrar_deciles):
         ],
     template="plotly_dark"
     )
-
-
-
     return figCandles, figCaro, round(valores_de_hoy.valor_del_dolar, 2), round(variacion_del_dolar_d, 2), round(variacion_del_dolar_m, 2), round(variacion_del_dolar_ytd, 2), valores_de_hoy.valor_banda_superior.iloc[0], valores_de_hoy.valor_banda_inferior.iloc[0], round(variacion_dolar_banda_superior, 2), round(variacion_dolar_banda_inferior, 2), round(media_movil_21,2), round(media_movil_100,2), round(variacion_dolar_mov21,2), round(variacion_dolar_mov100,2)
   else:
     return None, None, None, None, None, None, None, None, None, None, None, None, None, None

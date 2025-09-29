@@ -1,14 +1,13 @@
 from dash import html, dcc, Input, Output, callback
 import dash_daq as daq
-from paginas.funciones_datos_pais.dolar_oficial import grafico_del_dolar
 
 @callback(
     Output('pagina_datos_del_dolar_oficial', 'children'),
-    Input('tabs', 'value'))
-def pagina_datos_del_dolar_oficial(tab):
-  if tab == 'tab_datos_pais':
+    Input("url", "pathname"))
+def pagina_datos_del_dolar_oficial(pathname):
+  if pathname == '/datos_macro':
     return html.Div([
-      html.H3('Datos del país'),
+      html.H3('Datos macros del país'),
       dcc.Graph(id="grafico_del_dolar",
                 figure=None),
       daq.BooleanSwitch(
