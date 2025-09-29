@@ -76,7 +76,7 @@ def create_content():
         className="content"
     )
 
-# set the content according to the current pathname
+# Seteo el contenido de la página según la URL
 @callback(Output("page-content", "children"), Input("url", "pathname"))
 def render_page_content(pathname):
     if pathname == "/":
@@ -87,7 +87,7 @@ def render_page_content(pathname):
         return pagina_renta_variable()
     elif pathname == "/renta_fija":
         return pagina_renta_fija()
-    # If the user tries to reach a different page, return a 404 message
+    # Si la URL no coincide con ninguna de las anteriores, devuelvo un 404
     return html.Div(
         [
             html.H1("404: Not found", className="text-danger"),
