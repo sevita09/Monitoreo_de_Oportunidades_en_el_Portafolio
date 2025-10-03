@@ -1,0 +1,4 @@
+from paginas.funciones_datos_macro.pagina_dolar_oficial import pagina_datos_del_dolar_oficial
+
+def pagina_datos_macro(dark_mode):
+  return pagina_datos_del_dolar_oficial(dark_mode)
