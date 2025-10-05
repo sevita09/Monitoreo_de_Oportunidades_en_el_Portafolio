@@ -143,8 +143,12 @@ def grafico_del_dolar(path, mostrar_deciles, dark_mode):
     if mostrar_deciles:
       # Agregar las bandas al gráfico
       for i in range(0,9):
-        figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color='yellow')))
-    figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="dimgrey", font_color=dark_mode_font)
+        figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color="rgba(176,144,59,0.5)")))
+    figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="black", font_color=dark_mode_font)
+    figCandles.update_layout(
+        xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
+        yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
+    )
 
     # valores
     valores_de_hoy = valores_de_hoy_calculados(data_dolar, data_bandas)
