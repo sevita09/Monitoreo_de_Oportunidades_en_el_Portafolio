@@ -134,7 +134,15 @@ def grafico_del_dolar(path, mostrar_deciles, dark_mode):
                                         decreasing=dict(line=dict(color="#BC0000", width=3)), # Vela roja para bajar
                                         opacity=1,
                                         name='Dolar Oficial'
-                                        )])
+                                        )],
+                                        layout=go.Layout(
+                                          title={'text': "Dolar Oficial", "y":0.97, "x":0.5, "xanchor": "center", "yanchor": "top"},
+                                          margin={"t": 40, "b": 10, "l": 10, "r": 10},
+                                          height=500,
+                                          paper_bgcolor=dark_mode_number, 
+                                          plot_bgcolor=dark_mode_number, 
+                                          font_color=dark_mode_font
+                                        ))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_inferior, mode='lines', name='banda inferior', line=dict(color='green')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.mitad_del_cono, mode='markers', name='mitad del cono', opacity=0.4, line=dict(color='blue')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_superior, mode='lines', name='banda superior', line=dict(color='red')))

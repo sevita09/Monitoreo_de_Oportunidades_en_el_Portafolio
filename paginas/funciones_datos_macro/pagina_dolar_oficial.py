@@ -5,13 +5,6 @@ import dash_bootstrap_components as dbc
 def pagina_datos_del_dolar_oficial(dark_mode):
     return html.Div([
         dbc.Row(
-            dbc.Col(html.H4('Dolar oficial'),
-                    width={'size': 6, 'offset': 1},
-                    style={'textAlign': 'right',
-                           'marginTop': '15px'}
-                    )
-        ),
-        dbc.Row(
             dbc.Col(dcc.Graph(id="grafico_del_dolar",
                               figure=None,
                               className="grafico_del_dolar"), 
@@ -25,6 +18,13 @@ def pagina_datos_del_dolar_oficial(dark_mode):
                       className="mostrar_deciles_dolar_oficial",
                       color=dark_mode
                       ))
+        ),
+        dbc.Row(
+            dbc.Col(html.H4(' '),
+                    width={'size': 6, 'offset': 1},
+                    style={'textAlign': 'right',
+                           'marginTop': '15px'}
+                    )
         ),
         dbc.Row([
             dbc.Col([
