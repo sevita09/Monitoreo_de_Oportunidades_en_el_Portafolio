@@ -1,0 +1,10 @@
+.grafico_del_dolar {
+    position:'absolute';
+}
+
+.mostrar_deciles_dolar_oficial {
+    position:'absolute';
+    margin-top: -57px;
+    margin-left: 1245px;
+    z-index: 3;
+}

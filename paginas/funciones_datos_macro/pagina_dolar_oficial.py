@@ -79,13 +79,25 @@ def valores_de_hoy_calculados(data_dolar, data_bandas):
     Output('variacion_dolar_mov21', 'children'),
     Output('variacion_dolar_mov100', 'children')],
     [Input("url", "pathname"),
-     Input('mostrar_deciles_dolar_oficial', 'on')])
-def grafico_del_dolar(path, mostrar_deciles):
-  print("Actualizar grafico del dolar")
-  if path == "/datos_macro":
-    print("Actualizar grafico del dolar - dentro del if")
+     Input('mostrar_deciles_dolar_oficial', 'on'),
+     Input("dark_mode", "n_clicks")])
+def grafico_del_dolar(path, mostrar_deciles, dark_mode):
+  if path == "/datos_macro/dolar_oficial":
     # Obtener datos del dolar
     dolar = "USDARS=X"
+
+    if dark_mode is None:
+        dark_mode_data = "bg-dark"  # Modo oscuro por defecto
+        dark_mode_number = "#353a3f"
+        dark_mode_font="white"
+    elif dark_mode >= 100:
+        dark_mode_data = "bg-light"  # Modo claro
+        dark_mode_number = "#f9f9fa"
+        dark_mode_font="#54a2e1"
+    else:
+        dark_mode_data = "bg-dark"  # Modo oscuro
+        dark_mode_number = "#353a3f"
+        dark_mode_font="white"
 
     # Valores fijos para calcular pendiente
     dia_inicial = pd.to_datetime('2025-04-01')
@@ -103,7 +115,7 @@ def grafico_del_dolar(path, mostrar_deciles):
     dia_de_hoy = int(datetime.today().strftime('%d'))
 
     # Dolar
-    data_dolar = yf.download(dolar, start=dia_inicial, multi_level_index=False)
+    data_dolar = yf.download(dolar, start=dia_inicial,multi_level_index=False)
 
     # Bandas
     data_bandas = calculo_de_todas_las_bandas(dia_inicial, valor_dia_inicial_inferior, valor_dia_inicial_superior, dia_de_pendiente, valor_dia_de_pendiente_inferior, valor_dia_de_pendiente_superior, distancia)
@@ -118,11 +130,19 @@ def grafico_del_dolar(path, mostrar_deciles):
                                         high=data_dolar.High,
                                         low=data_dolar.Low,
                                         close=data_dolar.Close,
-                                        increasing=dict(line=dict(color='#00FF00', width=3)), # Vela verde para subir
-                                        decreasing=dict(line=dict(color='#FF0000', width=3)), # Vela roja para bajar
+                                        increasing=dict(line=dict(color="#00BC00", width=3)), # Vela verde para subir
+                                        decreasing=dict(line=dict(color="#BC0000", width=3)), # Vela roja para bajar
                                         opacity=1,
                                         name='Dolar Oficial'
-                                        )])
+                                        )],
+                                        layout=go.Layout(
+                                          title={'text': "Dolar Oficial", "y":0.97, "x":0.5, "xanchor": "center", "yanchor": "top"},
+                                          margin={"t": 40, "b": 10, "l": 10, "r": 10},
+                                          height=500,
+                                          paper_bgcolor=dark_mode_number, 
+                                          plot_bgcolor=dark_mode_number, 
+                                          font_color=dark_mode_font
+                                        ))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_inferior, mode='lines', name='banda inferior', line=dict(color='green')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.mitad_del_cono, mode='markers', name='mitad del cono', opacity=0.4, line=dict(color='blue')))
     figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_superior, mode='lines', name='banda superior', line=dict(color='red')))
@@ -131,8 +151,12 @@ def grafico_del_dolar(path, mostrar_deciles):
     if mostrar_deciles:
       # Agregar las bandas al gráfico
       for i in range(0,9):
-        figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color='yellow')))
-    figCandles.update_layout(title='Dolar Oficial', xaxis_rangeslider_visible=False, template="plotly_dark")
+        figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color="rgba(176,144,59,0.5)")))
+    figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="black", font_color=dark_mode_font)
+    figCandles.update_layout(
+        xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
+        yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
+    )
 
     # valores
     valores_de_hoy = valores_de_hoy_calculados(data_dolar, data_bandas)
@@ -154,9 +178,19 @@ def grafico_del_dolar(path, mostrar_deciles):
     figCaro = go.Figure(go.Indicator(
       mode="gauge+number",
       value=valores_de_hoy.valor_del_dolar.iloc[0],
-      number={"font": {"size": 60}},
+      number={"font": {"size": 50, "color": dark_mode_font}},
       gauge={
-          "axis": {"range": [valores_de_hoy.valor_banda_inferior.iloc[0], valores_de_hoy.valor_banda_superior.iloc[0]]},
+          "axis": {"range": [valores_de_hoy.valor_banda_inferior.iloc[0], valores_de_hoy.valor_banda_superior.iloc[0]],
+                   'tickvals': [round(valores_de_hoy.valor_banda_inferior.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_0.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_1.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_2.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_3.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_5.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_6.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_7.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_intermedia_8.iloc[0],1),
+                                round(valores_de_hoy.valor_banda_superior.iloc[0],1)]},
           "bar": {"color": "rgba(0,0,0,0.5)"},
           "steps": [
               {"range": [valores_de_hoy.valor_banda_inferior.iloc[0], valores_de_hoy.valor_banda_intermedia_0.iloc[0]], "color": colores[0]},
@@ -171,24 +205,25 @@ def grafico_del_dolar(path, mostrar_deciles):
               {"range": [valores_de_hoy.valor_banda_intermedia_8.iloc[0], valores_de_hoy.valor_banda_superior.iloc[0]], "color": colores[9]}
           ],
           "threshold": {
-              "line": {"color": "black", "width": 1},
+              "line": {"color": dark_mode_number, "width": 1},
               "thickness": 0.75,
-              "value": valores_de_hoy.valor_del_dolar.iloc[0]
+              "value": valores_de_hoy.valor_del_dolar.iloc[0],
+              
           }
         }
       ))
     figCaro.update_layout(
-    title={"text": "<b>Atraso & Devaluación Index</b>", "y": 0.45, "x": 0.5, "font": {"size": 22},},
-    margin={"t": 80},
+    title={"text": "<b>Atraso & Devaluación Index</b>", "y": 0, "x": 0.5, "font": {"size": 15},},
+    margin={"t": 12,
+            "b": 8,
+            "l": 12,
+            "r": 12},
     annotations=[
-        dict(x=0.5, y=0.2, text="Valor Dolar Oficial", showarrow=False, font={"size": 20}),
-        dict(x=0.12, y=-0.1, text="<b>Comprar</b>",    showarrow=False, font={"size": 20}),
-        dict(x=0.87, y=-0.1, text="<b>Vender</b>",    showarrow=False, font={"size": 20}),
-        dict(x=0.13, y=-0.15, text="Dolar baratito",    showarrow=False, font={"size": 12}),
-        dict(x=0.88, y=-0.15, text="Dolar muy caro",    showarrow=False, font={"size": 12}),
-
+        dict(x=0.5, y=0.5, text="Valor Dolar Oficial", showarrow=False, font={"size": 15})
         ],
-    template="plotly_dark"
+    paper_bgcolor=dark_mode_number, 
+    plot_bgcolor=dark_mode_number, 
+    font_color=dark_mode_font
     )
     return figCandles, figCaro, round(valores_de_hoy.valor_del_dolar, 2), round(variacion_del_dolar_d, 2), round(variacion_del_dolar_m, 2), round(variacion_del_dolar_ytd, 2), valores_de_hoy.valor_banda_superior.iloc[0], valores_de_hoy.valor_banda_inferior.iloc[0], round(variacion_dolar_banda_superior, 2), round(variacion_dolar_banda_inferior, 2), round(media_movil_21,2), round(media_movil_100,2), round(variacion_dolar_mov21,2), round(variacion_dolar_mov100,2)
   else:

@@ -8,6 +8,7 @@ app = Dash(
 )
 app.title = "MOP - Monitoreo de Oportunidades en el Portafolio"
 app.config.suppress_callback_exceptions = True
+app._favicon = ("../assets/icono.ico")
 
 # Quitar para probar en local y agregar para desplegar en Prod
 server = app.server
@@ -26,4 +27,4 @@ app.layout = html.Div(
 )
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
