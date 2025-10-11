@@ -11,7 +11,7 @@ app.config.suppress_callback_exceptions = True
 app._favicon = ("../assets/icono.ico")
 
 # Quitar para probar en local y agregar para desplegar en Prod
-#server = app.server
+server = app.server
 
 navbar = create_navbar()
 sidebar = create_sidebar()
