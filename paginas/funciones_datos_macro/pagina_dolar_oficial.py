@@ -63,69 +63,22 @@ def valores_de_hoy_calculados(data_dolar, data_bandas):
 
   return valores_dolar
 
-@callback(
-    [Output('grafico_del_dolar', 'figure'),
-    Output('nivel_del_valor_del_dolar', 'figure'),
-    Output('valor_del_dolar', 'children'),
-    Output('variacion_del_dolar_d', 'children'),
-    Output('variacion_del_dolar_m', 'children'),
-    Output('variacion_del_dolar_ytd', 'children'),
-    Output('banda_superior', 'children'),
-    Output('banda_inferior', 'children'),
-    Output('variacion_dolar_banda_superior', 'children'),
-    Output('variacion_dolar_banda_inferior', 'children'),
-    Output('media_movil_21', 'children'),
-    Output('media_movil_100', 'children'),
-    Output('variacion_dolar_mov21', 'children'),
-    Output('variacion_dolar_mov100', 'children')],
-    [Input("url", "pathname"),
-     Input('mostrar_deciles_dolar_oficial', 'on'),
-     Input("dark_mode", "n_clicks")])
-def grafico_del_dolar(path, mostrar_deciles, dark_mode):
-  if path == "/datos_macro/dolar_oficial":
-    # Obtener datos del dolar
-    dolar = "USDARS=X"
+def grafico_de_velas_dolar_oficial(dark_mode_number, dark_mode_font, data_dolar, dia_inicial, dolar_EMA21, dolar_EMA100, mostrar_deciles):
+  # Variable de día máximo del gráfico
+  distancia = (pd.Timestamp.today() - dia_inicial).days
 
-    if dark_mode is None:
-        dark_mode_data = "bg-dark"  # Modo oscuro por defecto
-        dark_mode_number = "#353a3f"
-        dark_mode_font="white"
-    elif dark_mode >= 100:
-        dark_mode_data = "bg-light"  # Modo claro
-        dark_mode_number = "#f9f9fa"
-        dark_mode_font="#54a2e1"
-    else:
-        dark_mode_data = "bg-dark"  # Modo oscuro
-        dark_mode_number = "#353a3f"
-        dark_mode_font="white"
+  # Valores fijos para calcular pendiente
+  valor_dia_inicial_inferior = 1002.773
+  valor_dia_inicial_superior = 1400.478
+  dia_de_pendiente = pd.to_datetime('2025-05-01')
+  valor_dia_de_pendiente_inferior = 989.337
+  valor_dia_de_pendiente_superior = 1413.914
 
-    # Valores fijos para calcular pendiente
-    dia_inicial = pd.to_datetime('2025-04-01')
-    valor_dia_inicial_inferior = 1002.773
-    valor_dia_inicial_superior = 1400.478
-    dia_de_pendiente = pd.to_datetime('2025-05-01')
-    valor_dia_de_pendiente_inferior = 989.337
-    valor_dia_de_pendiente_superior = 1413.914
-    valor_dolar_primer_dia_del_ano = yf.download(dolar, start='2025-01-02', end='2025-01-03', multi_level_index=False).Close.iloc[0]
+  # Bandas
+  data_bandas = calculo_de_todas_las_bandas(dia_inicial, valor_dia_inicial_inferior, valor_dia_inicial_superior, dia_de_pendiente, valor_dia_de_pendiente_inferior, valor_dia_de_pendiente_superior, distancia)
 
-    # Variable de día máximo del gráfico
-    distancia = (pd.Timestamp.today() - dia_inicial).days
-
-    # numero del dia de hoy ejemplo 2025-05-01 = 01
-    dia_de_hoy = int(datetime.today().strftime('%d'))
-
-    # Dolar
-    data_dolar = yf.download(dolar, start=dia_inicial,multi_level_index=False)
-
-    # Bandas
-    data_bandas = calculo_de_todas_las_bandas(dia_inicial, valor_dia_inicial_inferior, valor_dia_inicial_superior, dia_de_pendiente, valor_dia_de_pendiente_inferior, valor_dia_de_pendiente_superior, distancia)
-
-    # Serie de ema de 200 y 100 sobre el dolar
-    dolar_EMA21 = data_dolar['Close'].ewm(span=21, adjust=False).mean()
-    dolar_EMA100 = data_dolar['Close'].ewm(span=100, adjust=False).mean()
-
-    # Gráfico
-    figCandles = go.Figure(data=[go.Candlestick(x=data_dolar.index,
+  # Gráfico
+  figCandles = go.Figure(data=[go.Candlestick(x=data_dolar.index,
                                         open=data_dolar.Open,
                                         high=data_dolar.High,
                                         low=data_dolar.Low,
@@ -143,20 +96,75 @@ def grafico_del_dolar(path, mostrar_deciles, dark_mode):
                                           plot_bgcolor=dark_mode_number, 
                                           font_color=dark_mode_font
                                         ))
-    figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_inferior, mode='lines', name='banda inferior', line=dict(color='green')))
-    figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.mitad_del_cono, mode='markers', name='mitad del cono', opacity=0.4, line=dict(color='blue')))
-    figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_superior, mode='lines', name='banda superior', line=dict(color='red')))
-    figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA21, mode='lines', name='EMA 21', line=dict(color='orange', width=1)))
-    figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA100, mode='lines', name='EMA 100', line=dict(color='purple', width=1)))
-    if mostrar_deciles:
-      # Agregar las bandas al gráfico
-      for i in range(0,9):
-        figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color="rgba(176,144,59,0.5)")))
-    figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="black", font_color=dark_mode_font)
-    figCandles.update_layout(
-        xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
-        yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
-    )
+  figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_inferior, mode='lines', name='banda inferior', line=dict(color='green')))
+  figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.mitad_del_cono, mode='markers', name='mitad del cono', opacity=0.4, line=dict(color='blue')))
+  figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas.banda_superior, mode='lines', name='banda superior', line=dict(color='red')))
+  figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA21, mode='lines', name='EMA 21', line=dict(color='orange', width=1)))
+  figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA100, mode='lines', name='EMA 100', line=dict(color='purple', width=1)))
+  if mostrar_deciles:
+    # Agregar las bandas al gráfico
+    for i in range(0,9):
+      figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color="rgba(176,144,59,0.5)")))
+  figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="black", font_color=dark_mode_font)
+  figCandles.update_layout(
+      xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
+      yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
+  )
+  return figCandles, data_bandas
+
+
+@callback(
+    [Output('grafico_del_dolar_oficial', 'figure'),
+    Output('nivel_del_valor_del_dolar_oficial', 'figure'),
+    Output('valor_del_dolar_oficial', 'children'),
+    Output('variacion_del_dolar_oficial_d', 'children'),
+    Output('variacion_del_dolar_oficial_m', 'children'),
+    Output('variacion_del_dolar_oficial_ytd', 'children'),
+    Output('banda_superior_oficial', 'children'),
+    Output('banda_inferior_oficial', 'children'),
+    Output('variacion_dolar_oficial_banda_superior', 'children'),
+    Output('variacion_dolar_oficial_banda_inferior', 'children'),
+    Output('media_movil_21_oficial', 'children'),
+    Output('media_movil_100_oficial', 'children'),
+    Output('variacion_dolar_mov21_oficial', 'children'),
+    Output('variacion_dolar_mov100_oficial', 'children')],
+    [Input("url", "pathname"),
+     Input('mostrar_deciles_dolar_oficial', 'on'),
+     Input("dark_mode", "n_clicks")])
+def grafico_del_dolar(path, mostrar_deciles, dark_mode):
+  if path == "/datos_macro/dolar_oficial":
+    # Obtener datos del dolar
+    dolar = "USDARS=X"
+    dia_inicial = pd.to_datetime('2025-04-01')
+
+
+    if dark_mode is None:
+        dark_mode_data = "bg-dark"  # Modo oscuro por defecto
+        dark_mode_number = "#353a3f"
+        dark_mode_font="white"
+    elif dark_mode >= 100:
+        dark_mode_data = "bg-light"  # Modo claro
+        dark_mode_number = "#f9f9fa"
+        dark_mode_font="#54a2e1"
+    else:
+        dark_mode_data = "bg-dark"  # Modo oscuro
+        dark_mode_number = "#353a3f"
+        dark_mode_font="white"
+
+    valor_dolar_primer_dia_del_ano = yf.download(dolar, start='2025-01-02', end='2025-01-03', multi_level_index=False).Close.iloc[0]
+
+    # numero del dia de hoy ejemplo 2025-05-01 = 01
+    dia_de_hoy = int(datetime.today().strftime('%d'))
+
+    # Dolar
+    data_dolar = yf.download(dolar, start=dia_inicial,multi_level_index=False)
+
+    # Serie de ema de 100 y 21 sobre el dolar
+    dolar_EMA21 = data_dolar['Close'].ewm(span=21, adjust=False).mean()
+    dolar_EMA100 = data_dolar['Close'].ewm(span=100, adjust=False).mean()
+
+    # Gráfico de velas
+    figCandles, data_bandas = grafico_de_velas_dolar_oficial(dark_mode_number, dark_mode_font, data_dolar, dia_inicial, dolar_EMA21, dolar_EMA100, mostrar_deciles)
 
     # valores
     valores_de_hoy = valores_de_hoy_calculados(data_dolar, data_bandas)
