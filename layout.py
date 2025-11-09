@@ -2,8 +2,11 @@ import dash_bootstrap_components as dbc
 from dash import Input, Output, html, callback
 from paginas.pagina_principal import pagina_principal
 from paginas.paginas_datos_macro.pagina_dolar_oficial import pagina_dolar_oficial
-from paginas.funciones_datos_macro.pagina_dolar_oficial import grafico_del_dolar
-
+from paginas.funciones_datos_macro.pagina_dolar_oficial import grafico_del_dolar_oficial
+from paginas.paginas_datos_macro.pagina_dolar_mep_ccl import pagina_dolar_mep_ccl
+from paginas.funciones_datos_macro.pagina_dolar_mep_ccl import grafico_del_dolar_mep_ccl
+from paginas.paginas_datos_macro.pagina_brecha_dolares import pagina_brecha_dolares
+from paginas.funciones_datos_macro.pagina_brecha_dolares import grafico_de_la_brecha_del_dolar
 
 def create_sidebar():
     sidebar = html.Div([
@@ -24,9 +27,9 @@ def create_sidebar():
                                 dbc.Nav(
                                     [
                                         dbc.NavLink(html.Span("Dolar oficial"), href="/datos_macro/dolar_oficial", active="exact"),
-                                       # dbc.NavLink(html.Span("Dolar MEP"), href="/datos_macro/dolar_mep", active="exact"),
-                                       # dbc.NavLink(html.Span("Dolar CCL"), href="/datos_macro/dolar_ccl", active="exact"),
-                                       # dbc.NavLink(html.Span("Brecha dolar"), href="/datos_macro/brecha_dolar", active="exact"),
+                                        dbc.NavLink(html.Span("Dolar MEP"), href="/datos_macro/dolar_mep", active="exact"),
+                                        dbc.NavLink(html.Span("Dolar CCL"), href="/datos_macro/dolar_ccl", active="exact"),
+                                       dbc.NavLink(html.Span("Brecha dolares"), href="/datos_macro/brecha_dolares", active="exact"),
                                        # dbc.NavLink(html.Span("Inflación"), href="/datos_macro/inflacion", active="exact"),
                                        # dbc.NavLink(html.Span("Base monetaria"), href="/datos_macro/base_monetaria", active="exact"),
                                        # dbc.NavLink(html.Span("Reservas y deuda"), href="/datos_macro/reservas_y_deuda", active="exact"),
@@ -175,12 +178,12 @@ def render_page_content(pathname, dark_mode):
         return pagina_principal(dark_mode_data)
     elif pathname == "/datos_macro/dolar_oficial":
         return pagina_dolar_oficial(dark_mode_data)
-   # elif pathname == "/datos_macro/dolar_mep":
-   #     return pagina_dolar_mep(dark_mode_data)
-   # elif pathname == "/datos_macro/dolar_ccl":
-   #     return pagina_dolar_ccl(dark_mode_data)
-   # elif pathname == "/datos_macro/brecha_dolar":
-   #     return pagina_brecha_dolar(dark_mode_data)
+    elif pathname == "/datos_macro/dolar_mep":
+        return pagina_dolar_mep_ccl(dark_mode_data)
+    elif pathname == "/datos_macro/dolar_ccl":
+        return pagina_dolar_mep_ccl(dark_mode_data)
+    elif pathname == "/datos_macro/brecha_dolares":
+        return pagina_brecha_dolares(dark_mode_data)
    # elif pathname == "/datos_macro/inflacion":
    #     return pagina_inflacion(dark_mode_data)
    # elif pathname == "/datos_macro/base_monetaria":
