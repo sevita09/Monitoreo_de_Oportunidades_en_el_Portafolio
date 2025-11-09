@@ -131,12 +131,11 @@ def grafico_de_velas_dolar_oficial(dark_mode_number, dark_mode_font, data_dolar,
     [Input("url", "pathname"),
      Input('mostrar_deciles_dolar_oficial', 'on'),
      Input("dark_mode", "n_clicks")])
-def grafico_del_dolar(path, mostrar_deciles, dark_mode):
+def grafico_del_dolar_oficial(path, mostrar_deciles, dark_mode):
   if path == "/datos_macro/dolar_oficial":
     # Obtener datos del dolar
     dolar = "USDARS=X"
     dia_inicial = pd.to_datetime('2025-04-01')
-
 
     if dark_mode is None:
         dark_mode_data = "bg-dark"  # Modo oscuro por defecto
