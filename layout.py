@@ -7,6 +7,8 @@ from paginas.paginas_datos_macro.pagina_dolar_mep_ccl import pagina_dolar_mep_cc
 from paginas.funciones_datos_macro.pagina_dolar_mep_ccl import grafico_del_dolar_mep_ccl
 from paginas.paginas_datos_macro.pagina_brecha_dolares import pagina_brecha_dolares
 from paginas.funciones_datos_macro.pagina_brecha_dolares import grafico_de_la_brecha_del_dolar
+from paginas.paginas_renta_variable.pagina_volatilidad import pagina_volatilidad
+from paginas.funciones_renta_variable.pagina_volatilidad import grafico_de_volatilidad
 
 def create_sidebar():
     sidebar = html.Div([
@@ -56,7 +58,7 @@ def create_sidebar():
                         dbc.Collapse(
                                 dbc.Nav(
                                     [
-                                       # dbc.NavLink(html.Span("Renta variable1"), href="/variable/sub1", active="exact"),
+                                       dbc.NavLink(html.Span("Volatilidad"), href="/renta_variable/volatilidad", active="exact"),
                                        # dbc.NavLink(html.Span("Renta variable2"), href="/variable/sub2", active="exact"),
                                        # dbc.NavLink(html.Span("Renta variable3"), href="/variable/sub3", active="exact"),
                                     ],
@@ -184,6 +186,8 @@ def render_page_content(pathname, dark_mode):
         return pagina_dolar_mep_ccl(dark_mode_data)
     elif pathname == "/datos_macro/brecha_dolares":
         return pagina_brecha_dolares(dark_mode_data)
+    elif pathname == "/renta_variable/volatilidad":
+        return pagina_volatilidad(dark_mode_data)
    # elif pathname == "/datos_macro/inflacion":
    #     return pagina_inflacion(dark_mode_data)
    # elif pathname == "/datos_macro/base_monetaria":
