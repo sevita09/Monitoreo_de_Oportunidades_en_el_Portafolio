@@ -280,4 +280,4 @@ def grafico_de_volatilidad(path, categoria, ticker_input, dias, bins, en_dolares
         # No hay error: aseguramos toast cerrado
         return fig, valor_actual_text, std_text, z_text, media_text, menos_dos_sigma_text, menos_sigma_text, sigma_text, dos_sigma_text, en_dolares, logo_url, False, ""
     else:
-        return None, None, None, None, None, None, None, None, None, None, logo_url, False, ""
+        return None, None, None, None, None, None, None, None, None, None, None, False, ""
