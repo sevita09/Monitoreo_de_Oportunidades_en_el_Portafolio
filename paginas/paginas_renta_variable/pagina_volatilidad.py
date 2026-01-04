@@ -4,7 +4,6 @@ import dash_daq as daq
 
 
 def pagina_volatilidad(dark_mode):
-    # Single-line inputs: categoría, moneda, ticker (datalist), días, bins
     return html.Div([
         dbc.Row([
             
@@ -19,7 +18,7 @@ def pagina_volatilidad(dark_mode):
             ]), width={'size': 2}),
 
             dbc.Col(html.Div([
-                html.H5('Categoría'),
+                html.H5('Categoría', style={'display': 'flex', 'justifyContent': 'center'}),
                 dbc.RadioItems(
                     id='categoria_volatilidad',
                     options=[
@@ -32,6 +31,8 @@ def pagina_volatilidad(dark_mode):
                     style={
                         'display': 'grid',
                         'gridTemplateColumns': '1fr 1fr', # Dos columnas de igual ancho
+                        'justifyContent': 'center',
+                        'color': 'white'
                     },
                     inline=True,
                     className='categoria-volatilidad-radio'
@@ -43,25 +44,26 @@ def pagina_volatilidad(dark_mode):
             ]), width={'size': 1}),
 
             dbc.Col(html.Div([
-                html.H5('Ticker'),
-                # Input libre + Dropdown de sugerencias (escribe o selecciona)
-                dcc.Input(id='ticker_volatilidad', type='text', placeholder='Escribe ticker...', style={'width': '100%'}),
-                dcc.Dropdown(id='ticker_dropdown_suggestions', options=[], placeholder='Sugerencias...', clearable=True, style={'marginTop': '4px'})
+                html.H5('Ticker', style={'display': 'flex', 'justifyContent': 'center'}),
+                dcc.Input(id='ticker_volatilidad', type='text', placeholder='Escribe ticker...', style={'width': '100%', 'textAlign': 'center'}),
+                dcc.Dropdown(id='ticker_dropdown_suggestions', options=[], placeholder='Sugerencias...', clearable=True, style={'marginTop': '4px', 'textAlign': 'center'})
             ]), width={'size': 2}),
             
             dbc.Col(html.Div([
-                html.H5('Moneda'),
-                daq.BooleanSwitch(id='dolares_volatilidad', label=['$', 'U$D'], on=False)
+                html.H5('Moneda', style={'height':'40px', 'display': 'flex', 'justifyContent': 'center'}),
+                daq.BooleanSwitch(id='dolares_volatilidad', label=['$', 'U$D'], style={'height':'50px', 'color': 'white'}, on=False)
             ]), width={'size': 1}),
 
             dbc.Col(html.Div([
-                html.H5('Días'),
-                dcc.Input(id='dias_volatilidad', type='number', value=500, min=50, style={'width': '100%'})
+                html.H5('Días', style={'height':'36px', 'display': 'flex', 'justifyContent': 'center'}),
+                dcc.Input(id='dias_volatilidad', value=500, style={'width': '100%', 'textAlign': 'center'}),
+                html.H5(' ', style={'height':'13px'})
             ]), width={'size': 1}),
 
             dbc.Col(html.Div([
-                html.H5('Bins'),
-                dcc.Input(id='bins_volatilidad', type='number', value=30, min=5, style={'width': '100%'})
+                html.H5('Bins', style={'height':'36px', 'display': 'flex', 'justifyContent': 'center'}),
+                dcc.Input(id='bins_volatilidad', value=30, style={'width': '100%', 'textAlign': 'center'}),
+                html.H5(' ', style={'height':'13px'})
             ]), width={'size': 1}),
 
             dbc.Col(html.Div([

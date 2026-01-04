@@ -31,7 +31,7 @@ def create_sidebar():
                                         dbc.NavLink(html.Span("Dolar oficial"), href="/datos_macro/dolar_oficial", active="exact"),
                                         dbc.NavLink(html.Span("Dolar MEP"), href="/datos_macro/dolar_mep", active="exact"),
                                         dbc.NavLink(html.Span("Dolar CCL"), href="/datos_macro/dolar_ccl", active="exact"),
-                                       dbc.NavLink(html.Span("Brecha dolares"), href="/datos_macro/brecha_dolares", active="exact"),
+                                        dbc.NavLink(html.Span("Brecha dolares"), href="/datos_macro/brecha_dolares", active="exact"),
                                        # dbc.NavLink(html.Span("Inflación"), href="/datos_macro/inflacion", active="exact"),
                                        # dbc.NavLink(html.Span("Base monetaria"), href="/datos_macro/base_monetaria", active="exact"),
                                        # dbc.NavLink(html.Span("Reservas y deuda"), href="/datos_macro/reservas_y_deuda", active="exact"),

@@ -62,10 +62,9 @@ def get_dark_mode_colors(dark_mode):
     if dark_mode is None:
         return "#353a3f", "white"
     if dark_mode >= 100:
-        return "#f9f9fa", "#054a7a"
+        return "#f9f9fa", "#54a2e1"
     return "#353a3f", "white"
-
-
+    
 def sanitize_inputs(categoria, ticker_input, dias, bins):
     """Normalize inputs and return (ticker_download, dias, bins)."""
     try:
@@ -157,6 +156,7 @@ def construir_histograma(deviation, bins, dark_mode_number, dark_mode_font, curr
 @callback(
     [Output('ticker_dropdown_suggestions', 'options'),
     Output('ticker_dropdown_suggestions', 'value'),
+    Output('ticker_dropdown_suggestions', 'disabled'),
     Output('dolares_volatilidad', 'disabled')],
     Input('categoria_volatilidad', 'value')
 )
@@ -166,16 +166,24 @@ def poblar_tickers_por_categoria(categoria):
         opts = [{'label': t, 'value': t} for t in LISTA_LIDER]
         ticker = 'GGAL'
         dolares_volatilidad = False
+        ticker_dropdown_disabled = False
     elif categoria == 'General':
         opts = [{'label': t, 'value': t} for t in LISTA_GENERAL]
         ticker = 'MORI'
         dolares_volatilidad = False
-    else:
+        ticker_dropdown_disabled = False
+    elif categoria == 'Cedear':
         opts = [{'label': t, 'value': t} for t in LISTA_CEDEAR]
         ticker = 'AAPL'
         dolares_volatilidad = True
-            
-    return opts, ticker, dolares_volatilidad
+        ticker_dropdown_disabled = False
+    else:
+        opts = []
+        ticker = ''
+        dolares_volatilidad = False
+        ticker_dropdown_disabled = True
+
+    return opts, ticker, ticker_dropdown_disabled, dolares_volatilidad
 
 
 @callback(Output('ticker_volatilidad', 'value'), 
@@ -220,8 +228,10 @@ def grafico_de_volatilidad(path, categoria, ticker_input, dias, bins, en_dolares
         # Download main series
         data, err_msg = descargar_serie(ticker_download, pd.Timestamp.today() - pd.Timedelta(days=dias*2), pd.Timestamp.today())
         
+        if categoria == 'Cedear':
+            en_dolares = True
+
         logo_url = obtener_logo(ticker_download, categoria)
-        print("logo:", logo_url)
 
         if data.empty or 'Close' not in data.columns:
             msg = f"No se pudo descargar {ticker_download} tras 3 intentos."
@@ -231,7 +241,7 @@ def grafico_de_volatilidad(path, categoria, ticker_input, dias, bins, en_dolares
         close = data['Close']
 
         # If requested, convert to dollars using GGAL reference
-        if en_dolares:
+        if en_dolares and categoria != 'Cedear':
             try:
                 ggal_ba, _ = descargar_serie('GGAL.BA', pd.Timestamp.today() - pd.Timedelta(days=dias*2), pd.Timestamp.today())
                 ggal, _ = descargar_serie('GGAL', pd.Timestamp.today() - pd.Timedelta(days=dias*2), pd.Timestamp.today())
