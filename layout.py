@@ -7,6 +7,8 @@ from paginas.paginas_datos_macro.pagina_dolar_mep_ccl import pagina_dolar_mep_cc
 from paginas.funciones_datos_macro.pagina_dolar_mep_ccl import grafico_del_dolar_mep_ccl
 from paginas.paginas_datos_macro.pagina_brecha_dolares import pagina_brecha_dolares
 from paginas.funciones_datos_macro.pagina_brecha_dolares import grafico_de_la_brecha_del_dolar
+from paginas.paginas_renta_variable.pagina_volatilidad import pagina_volatilidad
+from paginas.funciones_renta_variable.pagina_volatilidad import grafico_de_volatilidad
 
 def create_sidebar():
     sidebar = html.Div([
@@ -29,7 +31,7 @@ def create_sidebar():
                                         dbc.NavLink(html.Span("Dolar oficial"), href="/datos_macro/dolar_oficial", active="exact"),
                                         dbc.NavLink(html.Span("Dolar MEP"), href="/datos_macro/dolar_mep", active="exact"),
                                         dbc.NavLink(html.Span("Dolar CCL"), href="/datos_macro/dolar_ccl", active="exact"),
-                                       dbc.NavLink(html.Span("Brecha dolares"), href="/datos_macro/brecha_dolares", active="exact"),
+                                        dbc.NavLink(html.Span("Brecha dolares"), href="/datos_macro/brecha_dolares", active="exact"),
                                        # dbc.NavLink(html.Span("Inflación"), href="/datos_macro/inflacion", active="exact"),
                                        # dbc.NavLink(html.Span("Base monetaria"), href="/datos_macro/base_monetaria", active="exact"),
                                        # dbc.NavLink(html.Span("Reservas y deuda"), href="/datos_macro/reservas_y_deuda", active="exact"),
@@ -56,7 +58,7 @@ def create_sidebar():
                         dbc.Collapse(
                                 dbc.Nav(
                                     [
-                                       # dbc.NavLink(html.Span("Renta variable1"), href="/variable/sub1", active="exact"),
+                                       dbc.NavLink(html.Span("Volatilidad"), href="/renta_variable/volatilidad", active="exact"),
                                        # dbc.NavLink(html.Span("Renta variable2"), href="/variable/sub2", active="exact"),
                                        # dbc.NavLink(html.Span("Renta variable3"), href="/variable/sub3", active="exact"),
                                     ],
@@ -184,6 +186,8 @@ def render_page_content(pathname, dark_mode):
         return pagina_dolar_mep_ccl(dark_mode_data)
     elif pathname == "/datos_macro/brecha_dolares":
         return pagina_brecha_dolares(dark_mode_data)
+    elif pathname == "/renta_variable/volatilidad":
+        return pagina_volatilidad(dark_mode_data)
    # elif pathname == "/datos_macro/inflacion":
    #     return pagina_inflacion(dark_mode_data)
    # elif pathname == "/datos_macro/base_monetaria":

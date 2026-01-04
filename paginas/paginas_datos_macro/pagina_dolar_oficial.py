@@ -134,8 +134,7 @@ def pagina_dolar_oficial(dark_mode):
                 )]
             )]
         )], 
-        style={
-            "height": "100vh"},
+        style={"height": "100vh", 'overflow': 'hidden'},
         className=dark_mode
       )
     

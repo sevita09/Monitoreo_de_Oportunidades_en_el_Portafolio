@@ -121,8 +121,7 @@ def pagina_brecha_dolares(dark_mode):
                 )]
             )]
         )], 
-        style={
-            "height": "100vh"},
+        style={"height": "100vh", 'overflow': 'hidden'},
         className=dark_mode
       )
     

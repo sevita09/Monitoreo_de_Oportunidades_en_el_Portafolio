@@ -109,8 +109,7 @@ def pagina_dolar_mep_ccl(dark_mode):
                 )]
             )]
         )], 
-        style={
-            "height": "100vh"},
+        style={"height": "100vh", 'overflow': 'hidden'},
         className=dark_mode
       )
     
