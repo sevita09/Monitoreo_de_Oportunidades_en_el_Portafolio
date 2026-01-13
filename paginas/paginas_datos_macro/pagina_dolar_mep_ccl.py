@@ -1,5 +1,4 @@
 from dash import html, dcc
-import dash_daq as daq
 import dash_bootstrap_components as dbc
 
 def pagina_dolar_mep_ccl(dark_mode):
@@ -108,7 +107,10 @@ def pagina_dolar_mep_ccl(dark_mode):
                             style={'textAlign': 'center'})]
                 )]
             )]
-        )], 
+        ),
+        # Toast para errores (se cierra automáticamente en 7s)
+        dbc.Toast(id='toast_error_dolar_mep_ccl', header='Error', is_open=False, duration=7000, dismissable=True, icon='danger', style={'position':'fixed','top':'10px','right':'10px','zIndex':9999}),
+        ],
         style={"height": "100vh", 'overflow': 'hidden'},
         className=dark_mode
       )

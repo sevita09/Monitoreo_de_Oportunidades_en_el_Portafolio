@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
-from dash import html, Input, Output, callback
-import yfinance as yf
+from dash import Input, Output, callback
 import pandas as pd
 import plotly.graph_objects as go
+
+from funciones.funciones_generales.obtener_datos import descargar_serie
 
 def bandas(dia_inicial, valor_dia_inicial, dia_de_pendiente, valor_dia_de_pendiente, distancia):
   pendiente = (valor_dia_de_pendiente - valor_dia_inicial) / (dia_de_pendiente - dia_inicial).days
@@ -11,16 +12,16 @@ def bandas(dia_inicial, valor_dia_inicial, dia_de_pendiente, valor_dia_de_pendie
   valor_dia_final = valor_dia_de_pendiente + distancia * pendiente
 
   # Crea un rango entre dia inicial y dia final
-  date_range = pd.date_range(start=dia_inicial, end=dia_final, freq='D') # 'D' for Daily
+  date_range = pd.date_range(start=dia_inicial, end=dia_final, freq='D') # 'D' para diario
 
   values = []
   for date in date_range:
-      # Calculate the number of days since the start date
-      days_diff = (date - dia_inicial).days
-      # Calculate the value with daily reduction
-      value = valor_dia_inicial + days_diff * pendiente
-      # Append the value to the list
-      values.append(value)
+    # Calcula la cantidad de días desde la fecha de inicio
+    days_diff = (date - dia_inicial).days
+    # Calcula el valor día a día usando la pendiente
+    value = valor_dia_inicial + days_diff * pendiente
+    # Agrega el valor a la lista
+    values.append(value)
 
   return values, dia_final
 
@@ -40,9 +41,9 @@ def calculo_de_todas_las_bandas(dia_inicial, valor_dia_inicial_inferior, valor_d
     bandas_intermedias.append(banda_decimo)
 
   # Crea un rango entre dia inicial y dia final
-  date_range = pd.date_range(start=dia_inicial, end=dia_final, freq='D') # 'D' for Daily
+  date_range = pd.date_range(start=dia_inicial, end=dia_final, freq='D') # 'D' para diario
 
-  # Create a DataFrame
+  # Crea un DataFrame
   data_bandas = {'Date': date_range, 'banda_inferior': banda_inferior, 'mitad_del_cono': mitad_del_cono,'banda_superior': banda_superior}
   for i in range(0,9):
     data_bandas['banda_intermedia_'+str(i)] = bandas_intermedias[i]
@@ -107,8 +108,8 @@ def grafico_de_velas_dolar_oficial(dark_mode_number, dark_mode_font, data_dolar,
       figCandles.add_trace(go.Scatter(x=data_bandas.Date, y=data_bandas['banda_intermedia_'+str(i)], mode='lines', name='decil '+str(i+1), line=dict(color="rgba(176,144,59,0.5)")))
   figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="black", font_color=dark_mode_font)
   figCandles.update_layout(
-      xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
-      yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
+    xaxis_gridcolor='rgba(255,255,255,0.4)',  # Líneas de la cuadrícula en negro con 20% de opacidad
+    yaxis_gridcolor='rgba(255,255,255,0.4)'   # Líneas de la cuadrícula en negro con 20% de opacidad
   )
   return figCandles, data_bandas
 
@@ -127,7 +128,9 @@ def grafico_de_velas_dolar_oficial(dark_mode_number, dark_mode_font, data_dolar,
     Output('media_movil_21_oficial', 'children'),
     Output('media_movil_100_oficial', 'children'),
     Output('variacion_dolar_mov21_oficial', 'children'),
-    Output('variacion_dolar_mov100_oficial', 'children')],
+    Output('variacion_dolar_mov100_oficial', 'children'),
+    Output('toast_error_dolar_oficial', 'is_open'),
+    Output('toast_error_dolar_oficial', 'children')],
     [Input("url", "pathname"),
      Input('mostrar_deciles_dolar_oficial', 'on'),
      Input("dark_mode", "n_clicks")])
@@ -136,6 +139,8 @@ def grafico_del_dolar_oficial(path, mostrar_deciles, dark_mode):
     # Obtener datos del dolar
     dolar = "USDARS=X"
     dia_inicial = pd.to_datetime('2025-04-01')
+    dia_inicial_primer_dia_del_ano = pd.to_datetime('2025-01-02')
+    dia_final_primer_dia_del_ano = pd.to_datetime('2025-01-03')
 
     if dark_mode is None:
         dark_mode_data = "bg-dark"  # Modo oscuro por defecto
@@ -150,14 +155,19 @@ def grafico_del_dolar_oficial(path, mostrar_deciles, dark_mode):
         dark_mode_number = "#353a3f"
         dark_mode_font="white"
 
-    valor_dolar_primer_dia_del_ano = yf.download(dolar, start='2025-01-02', end='2025-01-03', multi_level_index=False).Close.iloc[0]
-
+    valor_dolar_primer_dia_del_ano, msg = descargar_serie(dolar, dia_inicial_primer_dia_del_ano, dia_final_primer_dia_del_ano, 3)
+    if msg is not None:
+       return None, None, None, None, None, None, None, None, None, None, None, None, None, None, True, msg
+    
+    valor_dolar_primer_dia_del_ano = valor_dolar_primer_dia_del_ano.Close.iloc[0]
     # numero del dia de hoy ejemplo 2025-05-01 = 01
     dia_de_hoy = int(datetime.today().strftime('%d'))
 
     # Dolar
-    data_dolar = yf.download(dolar, start=dia_inicial,multi_level_index=False)
-
+    data_dolar, msg = descargar_serie(dolar, dia_inicial, datetime.today(), 3)
+    if msg is not None:
+       return None, None, None, None, None, None, None, None, None, None, None, None, None, None, True, msg
+    
     # Serie de ema de 100 y 21 sobre el dolar
     dolar_EMA21 = data_dolar['Close'].ewm(span=21, adjust=False).mean()
     dolar_EMA100 = data_dolar['Close'].ewm(span=100, adjust=False).mean()
@@ -232,6 +242,6 @@ def grafico_del_dolar_oficial(path, mostrar_deciles, dark_mode):
     plot_bgcolor=dark_mode_number, 
     font_color=dark_mode_font
     )
-    return figCandles, figCaro, round(valores_de_hoy.valor_del_dolar, 2), round(variacion_del_dolar_d, 2), round(variacion_del_dolar_m, 2), round(variacion_del_dolar_ytd, 2), valores_de_hoy.valor_banda_superior.iloc[0], valores_de_hoy.valor_banda_inferior.iloc[0], round(variacion_dolar_banda_superior, 2), round(variacion_dolar_banda_inferior, 2), round(media_movil_21,2), round(media_movil_100,2), round(variacion_dolar_mov21,2), round(variacion_dolar_mov100,2)
+    return figCandles, figCaro, round(valores_de_hoy.valor_del_dolar, 2), round(variacion_del_dolar_d, 2), round(variacion_del_dolar_m, 2), round(variacion_del_dolar_ytd, 2), valores_de_hoy.valor_banda_superior.iloc[0], valores_de_hoy.valor_banda_inferior.iloc[0], round(variacion_dolar_banda_superior, 2), round(variacion_dolar_banda_inferior, 2), round(media_movil_21,2), round(media_movil_100,2), round(variacion_dolar_mov21,2), round(variacion_dolar_mov100,2), False, None
   else:
-    return None, None, None, None, None, None, None, None, None, None, None, None, None, None
+    return None, None, None, None, None, None, None, None, None, None, None, None, None, None, False, None
