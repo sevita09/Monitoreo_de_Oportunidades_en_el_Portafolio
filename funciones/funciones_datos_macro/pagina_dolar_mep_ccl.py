@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 from datetime import date
-from dash import html, Input, Output, callback
+from dash import Input, Output, callback
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
+
+from funciones.funciones_generales.obtener_datos import descargar_serie
 
 def grafico_de_velas_dolar_mep_ccl(mep_ccl, data_dolar, dolar_EMA21, dolar_EMA100, dark_mode_number, dark_mode_font):
     title_text = "Dolar MEP" if mep_ccl == "mep" else "Dolar CCL"
@@ -31,31 +33,38 @@ def grafico_de_velas_dolar_mep_ccl(mep_ccl, data_dolar, dolar_EMA21, dolar_EMA10
     figCandles.add_trace(go.Scatter(x=data_dolar.index, y=dolar_EMA100, mode='lines', name='EMA 100', line=dict(color='purple', width=1)))
     figCandles.update_layout(xaxis_rangeslider_visible=False, paper_bgcolor=dark_mode_number, plot_bgcolor="black", font_color=dark_mode_font)
     figCandles.update_layout(
-        xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
-        yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
+        xaxis_gridcolor='rgba(255,255,255,0.4)',  # Líneas de la cuadrícula en negro con 20% de opacidad
+        yaxis_gridcolor='rgba(255,255,255,0.4)'   # Líneas de la cuadrícula en negro con 20% de opacidad
     )
 
     return figCandles
 
-def obtener_precios(ticker, dia_inicial):
-    # Obtiene los precios de cierre más recientes para un ticker.
-    return yf.download(ticker, start=dia_inicial,multi_level_index=False)
-
 def calcular_dolar_mep(dia_inicial):
     # Calcula el dólar MEP dividiendo el valor del bono AL30 en pesos por su valor en dólares.
+
+    ggal_ars, msg = descargar_serie("GGAL.BA", dia_inicial, datetime.today(), 3)
+    if msg is not None:
+        return None, msg
     
-    ggal_ars = obtener_precios("GGAL.BA", dia_inicial)
-    ggald_usd = obtener_precios("GGALD.BA", dia_inicial)
-    return ggal_ars / ggald_usd
+    ggald_usd, msg = descargar_serie("GGALD.BA", dia_inicial, datetime.today(), 3)
+    if msg is not None:
+        return None, msg
+    
+    return ggal_ars / ggald_usd, None
 
 def calcular_dolar_ccl(dia_inicial):
     # Calcula el Contado con Liquidación (CCL) usando la relación entre GGAL en la bolsa local y su ADR.
-    
-    ggal_ars = obtener_precios("GGAL.BA", dia_inicial)
-    ggal_usd = obtener_precios("GGAL", dia_inicial)
+
+    ggal_ars, msg = descargar_serie("GGAL.BA", dia_inicial, datetime.today(), 3)
+    if msg is not None:
+        return None, msg
+
+    ggal_usd, msg = descargar_serie("GGAL", dia_inicial, datetime.today(), 3)
+    if msg is not None:
+        return None, msg
 
     # La fórmula es (GGAL:BCBA * 10) / GGAL:NYSE, ya que 1 ADR son 10 acciones locales.
-    return (ggal_ars * 10) / ggal_usd
+    return (ggal_ars * 10) / ggal_usd, None
 
 def primer_dia_habil_anual():
     # año actual
@@ -81,11 +90,18 @@ def primer_dia_habil_anual():
 
 def calcular_brechas_dolar(dia_inicial):
     # Calcula las brechas entre los distintos tipos de cambio y retorna un diccionario.
+
+    dolar_oficial, msg = descargar_serie("USDARS=X", dia_inicial, datetime.today(), 3)
+    if msg is not None:
+        return None, msg
+    dolar_mep, msg = calcular_dolar_mep(dia_inicial)
+    if msg is not None:
+        return None, msg
     
-    dolar_oficial = obtener_precios("USDARS=X", dia_inicial)
-    dolar_mep = calcular_dolar_mep(dia_inicial)
-    dolar_ccl = calcular_dolar_ccl(dia_inicial)
-    
+    dolar_ccl, msg = calcular_dolar_ccl(dia_inicial)
+    if msg is not None:
+        return None, msg
+
     brechas = {
         "oficial": dolar_oficial,
         "mep": dolar_mep,
@@ -98,7 +114,7 @@ def calcular_brechas_dolar(dia_inicial):
     brechas["brecha_oficial_mep"] = ((dolar_mep / dolar_oficial) - 1) * 100
     brechas["brecha_mep_ccl"] = ((dolar_ccl / dolar_mep) - 1) * 100
     brechas["brecha_oficial_ccl"] = ((dolar_ccl / dolar_oficial) - 1) * 100
-    return brechas
+    return brechas, None
 
 def valores_dolar_mep_ccl(data_dolar, dia_de_hoy, valor_dolar_primer_dia_del_ano):
     dia_de_hoy = -(dia_de_hoy+1)
@@ -124,7 +140,9 @@ def valores_dolar_mep_ccl(data_dolar, dia_de_hoy, valor_dolar_primer_dia_del_ano
     return valores_dolar, emas
     
 def boxplot_brechas_mep(dia_inicial, dark_mode_number, dark_mode_font):
-    data_brechas = calcular_brechas_dolar(dia_inicial)
+    data_brechas, msg = calcular_brechas_dolar(dia_inicial)
+    if msg is not None:
+        return None, msg
     
     fig = go.Figure()
 
@@ -184,11 +202,13 @@ def boxplot_brechas_mep(dia_inicial, dark_mode_number, dark_mode_font):
     
     fig.update_yaxes(autorange='reversed')
 
-    return fig
+    return fig, None
 
 def boxplot_brechas_ccl(dia_inicial, dark_mode_number, dark_mode_font):
-    data_brechas = calcular_brechas_dolar(dia_inicial)
-    
+    data_brechas, msg = calcular_brechas_dolar(dia_inicial)
+    if msg is not None:
+        return None, msg
+
     fig = go.Figure()
 
     # Obtener el último valor de cada brecha
@@ -247,7 +267,7 @@ def boxplot_brechas_ccl(dia_inicial, dark_mode_number, dark_mode_font):
     
     fig.update_yaxes(autorange='reversed')
 
-    return fig
+    return fig, None
 
 @callback(
     [Output('grafico_del_dolar_mep_ccl', 'figure'),
@@ -259,7 +279,9 @@ def boxplot_brechas_ccl(dia_inicial, dark_mode_number, dark_mode_font):
     Output('media_movil_21_mep_ccl', 'children'),
     Output('media_movil_100_mep_ccl', 'children'),
     Output('variacion_dolar_mov21_mep_ccl', 'children'),
-    Output('variacion_dolar_mov100_mep_ccl', 'children')],
+    Output('variacion_dolar_mov100_mep_ccl', 'children'),
+    Output('toast_error_dolar_mep_ccl', 'is_open'),
+    Output('toast_error_dolar_mep_ccl', 'children')],
     [Input("url", "pathname"),
      Input("dark_mode", "n_clicks")])
 def grafico_del_dolar_mep_ccl(path, dark_mode):
@@ -277,24 +299,38 @@ def grafico_del_dolar_mep_ccl(path, dark_mode):
         dark_mode_font="white"
 
     primer_dia = primer_dia_habil_anual()
-    valor_dolar_primer_dia_del_ano_mep = calcular_dolar_mep(primer_dia).Close.iloc[0]
-    valor_dolar_primer_dia_del_ano_ccl = calcular_dolar_ccl(primer_dia).Close.iloc[0]
+    valor_dolar_primer_dia_del_ano_mep, msg = calcular_dolar_mep(primer_dia)
+    if msg is not None:
+        return None, msg
+    valor_dolar_primer_dia_del_ano_mep = valor_dolar_primer_dia_del_ano_mep.Close.iloc[0]
+
+    valor_dolar_primer_dia_del_ano_ccl, msg = calcular_dolar_ccl(primer_dia)
+    if msg is not None:
+        return None, msg
+    valor_dolar_primer_dia_del_ano_ccl = valor_dolar_primer_dia_del_ano_ccl.Close.iloc[0]
 
     # numero del dia de hoy ejemplo 2025-05-01 = 01
     dia_de_hoy = int(datetime.today().strftime('%d'))
 
-    data_dolar = calcular_brechas_dolar('2025-01-01')
+    data_dolar, msg = calcular_brechas_dolar('2025-01-01')
+    if msg is not None:
+        return None, msg
+
     if path == "/datos_macro/dolar_mep":
         valores_dolar, emas = valores_dolar_mep_ccl(data_dolar["mep"], dia_de_hoy, valor_dolar_primer_dia_del_ano_mep)
         figCandles = grafico_de_velas_dolar_mep_ccl("mep",data_dolar["mep"], emas["dolar_EMA21"], emas["dolar_EMA100"], dark_mode_number, dark_mode_font)
-        figBoxplot = boxplot_brechas_mep('2025-01-01', dark_mode_number, dark_mode_font)
-
-        return figCandles, figBoxplot, valores_dolar.valor_del_dolar, valores_dolar.variacion_del_dolar_d, valores_dolar.variacion_del_dolar_m, valores_dolar.variacion_del_dolar_ytd, valores_dolar.media_movil_21, valores_dolar.media_movil_100, valores_dolar.variacion_dolar_mov21, valores_dolar.variacion_dolar_mov100
+        figBoxplot, msg= boxplot_brechas_mep('2025-01-01', dark_mode_number, dark_mode_font)
+        if msg is not None:
+            return None, None, None, None, None, None, None, None, None, None, True, msg
+        
+        return figCandles, figBoxplot, valores_dolar.valor_del_dolar, valores_dolar.variacion_del_dolar_d, valores_dolar.variacion_del_dolar_m, valores_dolar.variacion_del_dolar_ytd, valores_dolar.media_movil_21, valores_dolar.media_movil_100, valores_dolar.variacion_dolar_mov21, valores_dolar.variacion_dolar_mov100, False, None
     elif path == "/datos_macro/dolar_ccl":
         valores_dolar, emas = valores_dolar_mep_ccl(data_dolar["ccl"], dia_de_hoy, valor_dolar_primer_dia_del_ano_ccl)
         figCandles = grafico_de_velas_dolar_mep_ccl("ccl", data_dolar["ccl"], emas["dolar_EMA21"], emas["dolar_EMA100"], dark_mode_number, dark_mode_font)
-        figBoxplot = boxplot_brechas_ccl('2025-01-01', dark_mode_number, dark_mode_font)
+        figBoxplot, msg = boxplot_brechas_ccl('2025-01-01', dark_mode_number, dark_mode_font)
+        if msg is not None:
+            return None, None, None, None, None, None, None, None, None, None, True, msg
 
-        return figCandles, figBoxplot, valores_dolar.valor_del_dolar, valores_dolar.variacion_del_dolar_d, valores_dolar.variacion_del_dolar_m, valores_dolar.variacion_del_dolar_ytd, valores_dolar.media_movil_21, valores_dolar.media_movil_100, valores_dolar.variacion_dolar_mov21, valores_dolar.variacion_dolar_mov100
+        return figCandles, figBoxplot, valores_dolar.valor_del_dolar, valores_dolar.variacion_del_dolar_d, valores_dolar.variacion_del_dolar_m, valores_dolar.variacion_del_dolar_ytd, valores_dolar.media_movil_21, valores_dolar.media_movil_100, valores_dolar.variacion_dolar_mov21, valores_dolar.variacion_dolar_mov100, False, None
     else:
-        return None, None, None, None, None, None, None, None, None, None
+        return None, None, None, None, None, None, None, None, None, None, False, None

@@ -2,13 +2,13 @@ import dash_bootstrap_components as dbc
 from dash import Input, Output, html, callback
 from paginas.pagina_principal import pagina_principal
 from paginas.paginas_datos_macro.pagina_dolar_oficial import pagina_dolar_oficial
-from paginas.funciones_datos_macro.pagina_dolar_oficial import grafico_del_dolar_oficial
+from funciones.funciones_datos_macro.pagina_dolar_oficial import grafico_del_dolar_oficial
 from paginas.paginas_datos_macro.pagina_dolar_mep_ccl import pagina_dolar_mep_ccl
-from paginas.funciones_datos_macro.pagina_dolar_mep_ccl import grafico_del_dolar_mep_ccl
+from funciones.funciones_datos_macro.pagina_dolar_mep_ccl import grafico_del_dolar_mep_ccl
 from paginas.paginas_datos_macro.pagina_brecha_dolares import pagina_brecha_dolares
-from paginas.funciones_datos_macro.pagina_brecha_dolares import grafico_de_la_brecha_del_dolar
+from funciones.funciones_datos_macro.pagina_brecha_dolares import grafico_de_la_brecha_del_dolar
 from paginas.paginas_renta_variable.pagina_volatilidad import pagina_volatilidad
-from paginas.funciones_renta_variable.pagina_volatilidad import grafico_de_volatilidad
+from funciones.funciones_renta_variable.pagina_volatilidad import grafico_de_volatilidad
 
 def create_sidebar():
     sidebar = html.Div([

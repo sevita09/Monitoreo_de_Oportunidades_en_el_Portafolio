@@ -133,7 +133,10 @@ def pagina_dolar_oficial(dark_mode):
                             style={'textAlign': 'center'})]
                 )]
             )]
-        )], 
+        ),
+        # Toast para errores (se cierra automáticamente en 7s)
+        dbc.Toast(id='toast_error_dolar_oficial', header='Error', is_open=False, duration=7000, dismissable=True, icon='danger', style={'position':'fixed','top':'10px','right':'10px','zIndex':9999}),
+        ], 
         style={"height": "100vh", 'overflow': 'hidden'},
         className=dark_mode
       )

@@ -1,32 +1,45 @@
-from dash import html, Input, Output, callback, no_update
+from dash import Input, Output, callback, no_update
 import numpy as np
 import requests
-import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
-import time
 from lxml import html as html_parser
-
+from funciones.funciones_generales.obtener_datos import dolarizar_serie_mep, descargar_serie
 
 # Listas de ejemplo (puedes ajustar con tu universo real)
-LISTA_LIDER = ['GGAL', 'PAMP', 'YPF', 'BMA']
-LISTA_GENERAL = ['MORI', 'EDN', 'TRAN', 'CEPU', 'ALUA', 'BYMA']
-LISTA_CEDEAR = ['AAPL', 'MSFT', 'TSLA', 'AMZN', 'NVDA']
+LISTA_LIDER = ['ALUA', 'BBAR', 'BMA', 'BYMA', 'CEPU', 'COME', 'CRES', 
+    'EDN', 'GGAL', 'LOMA', 'METR', 'PAMP', 'SUPV', 'TECO2', 
+    'TGNO4', 'TGSU2', 'TRAN', 'TXAR', 'VALO', 'YPFD']
+    
+LISTA_GENERAL = ['A3', 'AGRO', 'AUSO', 'BHIP', 'BOLT', 'BPAT', 'CADO', 'CAPX', 
+    'CARC', 'CECO2', 'CELU', 'CGPA2', 'CTIO', 'CVH', 'DGCU2', 
+    'DOME', 'DYCA', 'ESME', 'FERR', 'FIPL', 'GAMI', 'GARO', 
+    'GBAN', 'GCDI', 'GCLA', 'GRIM', 'HARG', 'HAVA', 'IEB', 
+    'INTR', 'INVJ', 'IRSA', 'LEDE', 'LONG', 'MERA', 'MIRG', 
+    'MOLA', 'MOLI', 'MORI', 'OEST', 'PATA', 'PGR', 'POLL', 
+    'RICH', 'RIGO', 'ROSE', 'SAMI', 'SEMI']
 
-# Descarga de serie desde yfinances de un ticker con 3 reintentos o cartel de error
-def descargar_serie(ticker, start, end, max_reintentos=3):
-    data = pd.DataFrame()
-    last_err_msg = ''
-    for attempt in range(max_reintentos):
-        try:
-            data = yf.download(ticker, start=start, end=end + pd.Timedelta(days=1), progress=False, threads=False, multi_level_index=False)
-            if not data.empty and 'Close' in data.columns:
-                break
-        except Exception as e:
-            last_err_msg = str(e)
-        time.sleep(0.5)
-    data = data.dropna()
-    return data, last_err_msg
+#CEDEARs de ETFs
+cedears_etf = [
+    "ARKK", "DIA", "EEM", "EWG", "EWJ", "EWZ", "IWM", "SPY", "QQQ", "XLF", "XLE", "XLK", "XLV"]
+
+# Sector Tecnológico y Comunicación
+cedears_tech = [
+    "AAPL", "AMD", "AMZN", "ASML", "AVGO", "BIDU", "CSCO", "CRM", "GOOGL", "IBM", 
+    "INTC", "META", "MSFT", "NFLX", "NVDA", "ORCL", "PYPL", "QCOM", "SAP", "SONY", 
+    "SPOT", "TSM", "TXN", "UBER"]
+
+# Sector Financiero y Consumo
+cedears_fin_cons = [
+    "ABEV", "BABA", "BBV", "BRKB", "C", "DIS", "HD", "JNJ", "JPM", "KO", "MA", 
+    "MCD", "MELI", "NKE", "PFE", "PG", "SBUX", "T", "TSLA", "V", "VZ", "WMT"]
+
+# Energía, Industria y Otros
+cedears_otros = [
+    "ADGO", "ASTS", "BA", "BBD", "CAT", "CVX", "DE", "GE", "GOLD", "HMY", 
+    "ITUB", "LMT", "PBR", "RIO", "SBSP", "SHEL", "VALE", "VIST", "XOM"]
+
+LISTA_CEDEAR = cedears_tech + cedears_etf + cedears_fin_cons + cedears_otros
 
 def obtener_logo(ticker, categoria):
     # Encabezados para evitar bloqueos
@@ -58,7 +71,7 @@ def obtener_logo(ticker, categoria):
         return url
 
 def get_dark_mode_colors(dark_mode):
-    """Return background color and font color depending on dark_mode value."""
+    """Devuelve color de fondo y color de fuente según el valor de dark_mode."""
     if dark_mode is None:
         return "#353a3f", "white"
     if dark_mode >= 100:
@@ -66,7 +79,7 @@ def get_dark_mode_colors(dark_mode):
     return "#353a3f", "white"
     
 def sanitize_inputs(categoria, ticker_input, dias, bins):
-    """Normalize inputs and return (ticker_download, dias, bins)."""
+    """Normaliza los inputs y devuelve (ticker_download, dias, bins)."""
     try:
         dias = int(dias) if dias is not None else 500
     except Exception:
@@ -93,27 +106,10 @@ def sanitize_inputs(categoria, ticker_input, dias, bins):
 
     return ticker_download, dias, bins
 
-
-def _prepare_denom_series(ggal_ba_df, ggal_df, target_index):
-    """Given dataframes for GGAL.BA and GGAL, return an aligned denom Series (GGAL.BA*10 / GGAL) reindexed to target_index.
-
-    Raises ValueError if there are no overlapping dates.
+def calcular_estadisticas(close, ema200):
+    """Calcula la EMA200, la serie de desviaciones y estadísticas básicas a partir de una serie de cierres.
+    Devuelve (deviation_list, mean, current, std).
     """
-    ggal_ba_series = ggal_ba_df['Close'] * 10
-    ggal_series = ggal_df['Close']
-    ggal_ba_series.name = 'GGAL.BA'
-    ggal_series.name = 'GGAL'
-    denom_df = pd.concat([ggal_ba_series, ggal_series], axis=1, join='inner')
-    if denom_df.empty:
-        raise ValueError("No overlapping dates for GGAL.BA and GGAL")
-    denom_series = denom_df['GGAL.BA'] / denom_df['GGAL']
-    denom_series = denom_series.replace(0, np.nan)
-    denom_aligned = denom_series.reindex(target_index).ffill().bfill()
-    return denom_aligned
-
-
-def compute_deviation_stats(close, ema200):
-    """Compute EMA200, deviation series and basic stats from a close Series. Returns (deviation_list, mean, current, std)."""
     # Desviación porcentual respecto a EMA200
     deviation_series = ((close - ema200) / ema200) * 100
     deviation_series = deviation_series.dropna()
@@ -123,7 +119,6 @@ def compute_deviation_stats(close, ema200):
     std_dev = float(np.std(deviation)) if len(deviation) else 0.0
     z = (current_dev - mean_dev) / std_dev if std_dev != 0 else 0.0
     return deviation, mean_dev, current_dev, std_dev, z
-
 
 def construir_histograma(deviation, bins, dark_mode_number, dark_mode_font, current_dev, mean_dev, std_dev, ticker_download, en_dolares, categoria):
     # Histograma
@@ -151,7 +146,6 @@ def construir_histograma(deviation, bins, dark_mode_number, dark_mode_font, curr
                         bargap=0.05)
 
     return fig
-
 
 @callback(
     [Output('ticker_dropdown_suggestions', 'options'),
@@ -185,7 +179,6 @@ def poblar_tickers_por_categoria(categoria):
 
     return opts, ticker, ticker_dropdown_disabled, dolares_volatilidad
 
-
 @callback(Output('ticker_volatilidad', 'value'), 
           Input('ticker_dropdown_suggestions', 'value'))
 def copiar_sugerencia_en_input(sugerencia):
@@ -193,7 +186,6 @@ def copiar_sugerencia_en_input(sugerencia):
     if sugerencia is None:
         return no_update
     return sugerencia
-
 
 @callback(
     [Output('grafico_de_volatilidad', 'figure'),
@@ -219,50 +211,41 @@ def copiar_sugerencia_en_input(sugerencia):
 )
 def grafico_de_volatilidad(path, categoria, ticker_input, dias, bins, en_dolares, dark_mode):
     if path == '/renta_variable/volatilidad':
-        # Colors
+        # color
         dark_mode_number, dark_mode_font = get_dark_mode_colors(dark_mode)
 
-        # Sanitize inputs and get ticker to download
+        # Sanitizar inputs y obtener ticker a descargar
         ticker_download, dias, bins = sanitize_inputs(categoria, ticker_input, dias, bins)
 
-        # Download main series
-        data, err_msg = descargar_serie(ticker_download, pd.Timestamp.today() - pd.Timedelta(days=dias*2), pd.Timestamp.today())
-        
+        # Obtener logo
+        logo_url = obtener_logo(ticker_download, categoria)
+
         if categoria == 'Cedear':
             en_dolares = True
 
-        logo_url = obtener_logo(ticker_download, categoria)
-
-        if data.empty or 'Close' not in data.columns:
-            msg = f"No se pudo descargar {ticker_download} tras 3 intentos."
-            return None, "-", "-", "-", "-", "-", "-", "-", "-", en_dolares, logo_url, True, msg
-
-        # Base close series
-        close = data['Close']
-
-        # If requested, convert to dollars using GGAL reference
+        start = pd.Timestamp.today() - pd.Timedelta(days=dias*2)
+        end = pd.Timestamp.today()
         if en_dolares and categoria != 'Cedear':
-            try:
-                ggal_ba, _ = descargar_serie('GGAL.BA', pd.Timestamp.today() - pd.Timedelta(days=dias*2), pd.Timestamp.today())
-                ggal, _ = descargar_serie('GGAL', pd.Timestamp.today() - pd.Timedelta(days=dias*2), pd.Timestamp.today())
-                denom_aligned = _prepare_denom_series(ggal_ba, ggal, data.index)
-                # ensure close is a Series
-                close_series = data['Close']
-                if isinstance(close_series, pd.DataFrame):
-                    close_series = close_series.iloc[:, 0]
-                close = close_series.reindex(denom_aligned.index).div(denom_aligned)
-                if close.dropna().empty:
-                    msg = f"La conversión a dólares falló por falta de datos coincidentes."
-                    return None, "-", "-", "-", "-", "-", "-", "-", "-", en_dolares, logo_url, True, msg
-            except Exception:
+            data, msg = dolarizar_serie_mep(ticker_download, start, end, max_reintentos=3)
+            if msg is not None:
+                msg = f"No se pudo completar la dolarización de {ticker_download} tras 3 intentos."
+                return None, "-", "-", "-", "-", "-", "-", "-", "-", en_dolares, logo_url, True, msg
+        else:
+            data, msg = descargar_serie(ticker_download, start, end)
+            data = data['Close']
+            if msg is not None:
                 msg = f"No se pudo descargar {ticker_download} tras 3 intentos."
                 return None, "-", "-", "-", "-", "-", "-", "-", "-", en_dolares, logo_url, True, msg
 
+        if data.empty:
+            msg = f"No se pudo descargar {ticker_download} tras 3 intentos."
+            return None, "-", "-", "-", "-", "-", "-", "-", "-", en_dolares, logo_url, True, msg
+
         # EMA200
-        ema200 = close.ewm(span=200, adjust=False).mean()
+        ema200 = data.ewm(span=200, adjust=False).mean()
 
         # Desviación porcentual respecto a EMA200
-        deviation, mean_dev, current_dev, std_dev, z = compute_deviation_stats(close, ema200)
+        deviation, mean_dev, current_dev, std_dev, z = calcular_estadisticas(data, ema200)
 
         # Construir histograma
         fig = construir_histograma(deviation, bins, dark_mode_number, dark_mode_font, current_dev, mean_dev, std_dev, ticker_download, en_dolares, categoria)

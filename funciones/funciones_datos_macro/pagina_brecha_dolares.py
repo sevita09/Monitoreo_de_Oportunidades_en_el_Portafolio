@@ -1,10 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from datetime import date
-from dash import html, Input, Output, callback
-import yfinance as yf
-import pandas as pd
+from dash import Input, Output, callback
 import plotly.graph_objects as go
-from paginas.funciones_datos_macro.pagina_dolar_mep_ccl import calcular_brechas_dolar
+from funciones.funciones_datos_macro.pagina_dolar_mep_ccl import calcular_brechas_dolar
 
 def boxplot_brechas_mep(data_brechas, dark_mode_number, dark_mode_font):
     fig = go.Figure()
@@ -92,7 +90,9 @@ def boxplot_brechas_mep(data_brechas, dark_mode_number, dark_mode_font):
     Output('valor_de_la_brecha_mep_ccl', 'children'),
     Output('valor_de_la_mediana_oficial_mep', 'children'),
     Output('valor_de_la_mediana_oficial_ccl', 'children'),
-    Output('valor_de_la_mediana_mep_ccl', 'children')],
+    Output('valor_de_la_mediana_mep_ccl', 'children'),
+    Output('toast_error_brecha_dolares', 'is_open'),
+    Output('toast_error_brecha_dolares', 'children')],
     [Input("url", "pathname"),
      Input("dark_mode", "n_clicks")])
 def grafico_de_la_brecha_del_dolar(path, dark_mode):
@@ -110,7 +110,10 @@ def grafico_de_la_brecha_del_dolar(path, dark_mode):
         dark_mode_font="white"
 
     if path == "/datos_macro/brecha_dolares":
-        data_brechas = calcular_brechas_dolar(date.today() - timedelta(days=365*2))
+        data_brechas, msg = calcular_brechas_dolar(date.today() - timedelta(days=365*2))
+        if msg is not None:
+            return None, None, None, None, None, None, None, None, True, msg
+        
         title_text = "Brechas entre Dólares"
 
         fig_boxplot = boxplot_brechas_mep(data_brechas, dark_mode_number, dark_mode_font)
@@ -143,8 +146,8 @@ def grafico_de_la_brecha_del_dolar(path, dark_mode):
                           plot_bgcolor="black", 
                           font_color=dark_mode_font)
         fig.update_layout(
-            xaxis_gridcolor='rgba(255,255,255,0.4)',  # Black grid lines with 20% opacity
-            yaxis_gridcolor='rgba(255,255,255,0.4)'   # Black grid lines with 20% opacity
+            xaxis_gridcolor='rgba(255,255,255,0.4)',  # Líneas de la cuadrícula en negro con 20% de opacidad
+            yaxis_gridcolor='rgba(255,255,255,0.4)'   # Líneas de la cuadrícula en negro con 20% de opacidad
         )
         
         valor_oficial_mep = round(data_brechas["brecha_oficial_mep"].iloc[:, 0].iloc[-1], 2).item()
@@ -155,6 +158,6 @@ def grafico_de_la_brecha_del_dolar(path, dark_mode):
         mediana_oficial_ccl = round(data_brechas["brecha_oficial_ccl"].iloc[:, 0].median(), 2).item()
         mediana_mep_ccl = round(data_brechas["brecha_mep_ccl"].iloc[:, 0].median(), 2).item()
 
-        return fig, fig_boxplot, valor_oficial_mep, valor_oficial_ccl, valor_mep_ccl, mediana_oficial_mep, mediana_oficial_ccl, mediana_mep_ccl
+        return fig, fig_boxplot, valor_oficial_mep, valor_oficial_ccl, valor_mep_ccl, mediana_oficial_mep, mediana_oficial_ccl, mediana_mep_ccl, False, None
     else:
-        return None, None, None, None, None, None, None, None
+        return None, None, None, None, None, None, None, None, False, None
