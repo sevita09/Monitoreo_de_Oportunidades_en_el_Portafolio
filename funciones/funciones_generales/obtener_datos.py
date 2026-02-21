@@ -36,17 +36,17 @@ def preparar_serie_denominador_dolar_mep(ggal_ba_df, ggal_df, target_index):
     ggal_ba_series = ggal_ba_df['Close'] * 10
     ggal_series = ggal_df['Close']
     ggal_ba_series.name = 'GGAL.BA'
-    ggal_series.name = 'GGALD.BA'
+    ggal_series.name = 'GGAL'
     denom_df = pd.concat([ggal_ba_series, ggal_series], axis=1, join='inner')
     if denom_df.empty:
-        raise ValueError("No hay fechas solapadas entre GGAL.BA y GGALD.BA")
-    denom_series = denom_df['GGAL.BA'] / denom_df['GGALD.BA']
+        raise ValueError("No hay fechas solapadas entre GGAL.BA y GGAL")
+    denom_series = denom_df['GGAL.BA'] / denom_df['GGAL']
     denom_series = denom_series.replace(0, pd.NA)
     denom_aligned = denom_series.reindex(target_index).ffill().bfill()
     return denom_aligned
 
 def calcular_dolar_mep_para_dolarizar(start, end, target_index, max_reintentos=3):
-    """Calcula la serie del dólar MEP usando GGAL.BA y GGALD.BA.
+    """Calcula la serie del dólar MEP usando GGAL.BA y GGAL.
 
     Devuelve (serie_denom_aligned, '') en caso exitoso o (None, mensaje_error) si falla alguna descarga o el proceso.
     """
@@ -54,9 +54,9 @@ def calcular_dolar_mep_para_dolarizar(start, end, target_index, max_reintentos=3
     if err1 or ggal_ba.empty:
         return None, f"Error descargando GGAL.BA: {err1 or 'sin datos'}"
 
-    ggal, err2 = descargar_serie('GGALD.BA', start, end, max_reintentos=max_reintentos)
+    ggal, err2 = descargar_serie('GGAL', start, end, max_reintentos=max_reintentos)
     if err2 or ggal.empty:
-        return None, f"Error descargando GGALD.BA: {err2 or 'sin datos'}"
+        return None, f"Error descargando GGAL: {err2 or 'sin datos'}"
 
     try:
         denom_aligned = preparar_serie_denominador_dolar_mep(ggal_ba, ggal, target_index)

@@ -7,8 +7,10 @@ from paginas.paginas_datos_macro.pagina_dolar_mep_ccl import pagina_dolar_mep_cc
 from funciones.funciones_datos_macro.pagina_dolar_mep_ccl import grafico_del_dolar_mep_ccl
 from paginas.paginas_datos_macro.pagina_brecha_dolares import pagina_brecha_dolares
 from funciones.funciones_datos_macro.pagina_brecha_dolares import grafico_de_la_brecha_del_dolar
+from paginas.paginas_renta_variable.pagina_volatilidad_diaria import pagina_volatilidad_diaria
+from funciones.funciones_renta_variable.pagina_volatilidad_diaria import actualizar_histogramas_pagina_volatilidad_diaria
 from paginas.paginas_renta_variable.pagina_volatilidad import pagina_volatilidad
-from funciones.funciones_renta_variable.pagina_volatilidad import grafico_de_volatilidad
+from funciones.funciones_renta_variable.pagina_volatilidad import grafico_de_volatilidad_pagina_volatilidad
 
 def create_sidebar():
     sidebar = html.Div([
@@ -59,7 +61,7 @@ def create_sidebar():
                                 dbc.Nav(
                                     [
                                        dbc.NavLink(html.Span("Volatilidad"), href="/renta_variable/volatilidad", active="exact"),
-                                       # dbc.NavLink(html.Span("Renta variable2"), href="/variable/sub2", active="exact"),
+                                       dbc.NavLink(html.Span("Volatilidad diaria"), href="/renta_variable/volatilidad_diaria", active="exact"),
                                        # dbc.NavLink(html.Span("Renta variable3"), href="/variable/sub3", active="exact"),
                                     ],
                                     vertical=True,
@@ -188,8 +190,8 @@ def render_page_content(pathname, dark_mode):
         return pagina_brecha_dolares(dark_mode_data)
     elif pathname == "/renta_variable/volatilidad":
         return pagina_volatilidad(dark_mode_data)
-   # elif pathname == "/datos_macro/inflacion":
-   #     return pagina_inflacion(dark_mode_data)
+    elif pathname == "/renta_variable/volatilidad_diaria":
+        return pagina_volatilidad_diaria(dark_mode_data)
    # elif pathname == "/datos_macro/base_monetaria":
    #     return pagina_base_monetaria(dark_mode_data)
    # elif pathname == "/datos_macro/reservas_y_deuda":
