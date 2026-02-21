@@ -40,7 +40,7 @@ def pagina_volatilidad(dark_mode):
             ]), width={'size': 2}),
 
             dbc.Col(html.Div([
-                html.Img(id='logo_url', style={'height':'100px', 'width':'100px'})
+                html.Img(id='logo_url_pagina_volatilidad', style={'height':'100px', 'width':'100px'})
             ]), width={'size': 1}),
 
             dbc.Col(html.Div([
@@ -73,10 +73,10 @@ def pagina_volatilidad(dark_mode):
 
         # Graph and stats
         dbc.Row(
-            dbc.Col(dcc.Graph(id="grafico_de_volatilidad", figure=None, className="grafico_de_volatilidad"), width={'size': 12, 'offset': 0}, style={'marginTop': '1.0rem'})
+            dbc.Col(dcc.Graph(id="grafico_de_volatilidad", figure=None), width={'size': 12, 'offset': 0}, style={'marginTop': '1.0rem'})
         ),
         # Toast para errores (se cierra automáticamente en 7s)
-        dbc.Toast(id='toast_error', header='Error', is_open=False, duration=7000, dismissable=True, icon='danger', style={'position':'fixed','top':'10px','right':'10px','zIndex':9999}),
+        dbc.Toast(id='toast_error_pagina_volatilidad', header='Error', is_open=False, duration=7000, dismissable=True, icon='danger', style={'position':'fixed','top':'10px','right':'10px','zIndex':9999}),
         
         dbc.Row([
             dbc.Col(html.H5('Media'), width={'size': 1}, style={'textAlign':'center'}),

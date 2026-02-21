@@ -198,9 +198,9 @@ def copiar_sugerencia_en_input(sugerencia):
      Output('valor_sigma', 'children'),
      Output('valor_dos_sigma', 'children'),
      Output('dolares_volatilidad', 'on'),
-     Output('logo_url', 'src'),
-     Output('toast_error', 'is_open'),
-     Output('toast_error', 'children')],
+     Output('logo_url_pagina_volatilidad', 'src'),
+     Output('toast_error_pagina_volatilidad', 'is_open'),
+     Output('toast_error_pagina_volatilidad', 'children')],
     [Input('url', 'pathname'),
      Input('categoria_volatilidad', 'value'),
      Input('ticker_volatilidad', 'value'),
@@ -209,7 +209,7 @@ def copiar_sugerencia_en_input(sugerencia):
      Input('dolares_volatilidad', 'on'),
      Input('dark_mode', 'n_clicks')]
 )
-def grafico_de_volatilidad(path, categoria, ticker_input, dias, bins, en_dolares, dark_mode):
+def grafico_de_volatilidad_pagina_volatilidad(path, categoria, ticker_input, dias, bins, en_dolares, dark_mode):
     if path == '/renta_variable/volatilidad':
         # color
         dark_mode_number, dark_mode_font = get_dark_mode_colors(dark_mode)
